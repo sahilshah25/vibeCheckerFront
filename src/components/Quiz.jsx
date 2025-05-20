@@ -4,12 +4,18 @@ import api from '../api';
 const Quiz = ({ onSubmit }) => {
   const [questions, setQuestions] = useState([]);
   const [answers, setAnswers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/quiz').then(res => {
-      setQuestions(res.data);
-      setAnswers(Array(res.data.length).fill(null));
-    });
+    api.get('/quiz')
+      .then(res => {
+        setQuestions(res.data);
+        setAnswers(Array(res.data.length).fill(null));
+      })
+      .catch(err => {
+        console.error("Error loading quiz questions:", err);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   const handleChange = (qIndex, optionIndex) => {
@@ -22,6 +28,14 @@ const Quiz = ({ onSubmit }) => {
     const res = await api.post('/quiz/submit', { answers });
     onSubmit(res.data.vibe);
   };
+
+  if (loading) {
+    return (
+      <div className="text-center py-10 text-purple-700 font-semibold text-xl animate-pulse">
+        ⏳ Loading Questions...
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -59,4 +73,3 @@ const Quiz = ({ onSubmit }) => {
 };
 
 export default Quiz;
-
